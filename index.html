@@ -1,5 +1,9 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Coffin Lock</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almendra+SC&family=Almendra:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap">
@@ -105,14 +109,7 @@ button:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
 @keyframes relock{0%{transform:translate(-50%,-30px) rotate(-32deg)}60%{transform:translate(-50%,-30px)}100%{transform:translateX(-50%)}}
 .dial.new{animation:slidein .6s ease-out}
 @keyframes slidein{0%{opacity:0;transform:translateY(-20px) scale(.6)}100%{opacity:1;transform:none}}
-.admin{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(8,4,10,.88);padding:0 16px}
-.acard{width:min(100%,320px);background:var(--crypt);border:1px solid #5a3a4a;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;color:var(--ink);font-family:var(--text)}
-.acard label{font-family:var(--display);font-size:1.3rem}
-.acard input{font:inherit;font-size:18px;padding:8px 10px;border-radius:8px;border:1px solid #5a3a4a;background:var(--night);color:var(--ink)}
-.arow{display:flex;gap:8px;justify-content:flex-end}
-.arow button{font-family:var(--display);font-size:16px;min-height:44px;padding:6px 16px;border-radius:999px;border:1px solid #c0404f;background:transparent;color:var(--ink);cursor:pointer}
-.acard p{margin:0;min-height:1.2em;font-size:15px;color:#ff9a8a;font-style:italic}
-.msg[hidden],.coords[hidden],.replay[hidden],.admin[hidden]{display:none}
+.msg[hidden],.coords[hidden],.replay[hidden]{display:none}
 /* the ending: light streams out of the open coffin and reveals the coordinates written inside */
 @property --r{syntax:'<percentage>';inherits:false;initial-value:0%}
 .light{position:absolute;inset:0;clip-path:polygon(28% 0,72% 0,100% 20%,84% 100%,16% 100%,0 20%);background:radial-gradient(70% 48% at 50% 58%,rgba(255,246,220,.9),rgba(255,206,130,.55) 38%,rgba(255,140,70,.2) 68%,rgba(255,120,60,0) 90%);opacity:0;z-index:1;pointer-events:none;mix-blend-mode:screen}
@@ -135,6 +132,8 @@ button:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.coffin.lit .light,.coffin.lit .rays{animation:none;opacity:.9}.coffin .coords.show{animation:none;--r:120%}.mote{display:none}}
 @media (prefers-reduced-motion:reduce){.lock.relock .shackle,.dial.new{animation:none}.coffin.shake .lidgroup,.peg.pop,.win.spin .sym,.coords,.coord-n,.coord-w{animation:none}.bigbat,.glow{display:none}.lidgroup,.chain{transition:none}.lock.open .shackle{animation:none;transform:translate(-50%,-30px)}}
 </style>
+</head>
+<body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -189,12 +188,11 @@ button:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
   <p class="msg" id="msg" hidden></p>
   <button class="replay" id="replay" type="button" hidden>↺ Replay</button>
 </main>
-<div class="admin" id="admin" hidden><div class="acard" role="dialog" aria-modal="true" aria-labelledby="apwl"><label id="apwl" for="apw">Password</label><input id="apw" type="password" autocomplete="off"><p id="aerr" role="status"></p><div class="arow"><button id="acancel" type="button">Cancel</button><button id="aok" type="button">Open</button></div></div></div>
 
 <script>
 (()=>{
 "use strict";
-// Final coordinates — placeholder until the real ones are supplied
+// final coordinates, scrambled
 const FINAL=(()=>{const k=["vlad","_","tepes",String(1800+97)].join("");let h=2166136261;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}let a=h>>>0;const nx=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)&255;};const r=atob("V53tI27YX2f020vQi27Q/e6W19jGI/IyKa14"),o=new Uint8Array(r.length);for(let i=0;i<r.length;i++)o[i]=r.charCodeAt(i)^nx();return new TextDecoder().decode(o).split("|");})();
 const NAMES=["bat","skull","spider","moon","pumpkin","candle"];
 const LEVELS=[3,4],TRIES=8,NS=6;
@@ -382,7 +380,7 @@ function fail(){
   const g0=gen;setTimeout(()=>{if(g0!==gen)return;c.classList.remove("fail","shake");m.hidden=true;reset();},4800);
 }
 function reset(){tries=0;newCode();buildRows();busy=false;$("tryBtn").disabled=false;}
-// set up a level from scratch (used at the start, between levels, by Replay and by the admin door)
+// set up a level from scratch (used at the start, between levels and by Replay)
 function setLevel(n,grow){
   gen++;lvl=n;LEN=LEVELS[n];guess=[0,1,2,3].slice(0,LEN);
   rowsEl.classList.remove("gone");buildDials();if(grow&&!reduce)dialsEl.lastElementChild.classList.add("new");reset();}
@@ -451,19 +449,9 @@ function clearEnd(){won=false;document.body.classList.remove("won");$("lock").cl
   $("coords").hidden=true;$("replay").hidden=true;$("msg").hidden=true;document.querySelectorAll(".bigbat").forEach(b=>b.remove());}
 // replay always starts again from the first lock
 $("replay").addEventListener("click",()=>{clearEnd();setLevel(0);scrollTo({top:0,behavior:reduce?"auto":"smooth"});});
-// admin door: three quick taps on the title ask for the password; the right one opens the last lock and plays the ending
-const ADMIN=217580182;let titleTaps=[];
-function adminHash(t){let h=2166136261;t="jar-admin|"+t;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h>>>0;}
-document.querySelector("h1").addEventListener("pointerdown",()=>{const now=performance.now();titleTaps=titleTaps.filter(t=>now-t<1500);titleTaps.push(now);
-  if(titleTaps.length>=3){titleTaps=[];$("aerr").textContent="";$("apw").value="";$("admin").hidden=false;setTimeout(()=>$("apw").focus(),0);}});
-function adminClose(){$("admin").hidden=true;}
-function adminTry(){if(adminHash($("apw").value)!==ADMIN){$("aerr").textContent="That's not it.";$("apw").select();return;}
-  adminClose();initAudio();clearEnd();setLevel(LEVELS.length-1);guess=code.slice();buildDials();
-  const row=rowsEl.children[0];[...row.children].slice(0,LEN).forEach((s,i)=>s.innerHTML=symSVG(code[i]));row.classList.remove("next");
-  row.querySelectorAll(".peg").forEach(p=>p.classList.add("red"));tries=1;busy=true;setTimeout(win,500);}
-$("aok").addEventListener("click",adminTry);$("acancel").addEventListener("click",adminClose);
-$("apw").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();adminTry();}else if(e.key==="Escape")adminClose();});
 setLevel(0);
-window.__cl={get code(){return code.slice();},get level(){return lvl;},set(g){guess=g.slice();buildDials();}};
 })();
 </script>
+
+</body>
+</html>
